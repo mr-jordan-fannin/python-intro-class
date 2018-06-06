@@ -31,41 +31,49 @@ def menu_screen():
           '\\_________________________________\\|\n')
 
 
-def new_file():
+def new_file(file_name):
     """ Allows user to make a new text file. """
     clear_screen()
     print('___________________________________\n'
           '|         Create New File         |\n'
           '\---------------------------------/')
-    file_name = get_filename('New')
+    if file_name == '':
+        file_name = get_filename('New')
     print('Input text below.\n'
           f'Press Enter to close {file_name}.')
     content = input('> ')
     with open(file_name, 'w') as file:
         file.write(content)
-    clear_screen()
-    print(f'Your file has been saved as {file_name}.txt.')
+    input(f'{file_name} has been saved.\n'
+          f'Press Enter to return to main menu.')
     main()
 
 
 def get_filename(task):
     """ Prompts user for file name and checks validity. """
-    while True:
-        file = input('\nInput file name or press '
-                     'Enter to return to main menu: \n')
-        if file == '':
-            main()
-        file_found = os.path.isfile(file)
-        if task == 'New':
-            if file_found:
-                print(f'{file} already exists.')
-            else:
-                return file
+    file = input('\nInput file name or press '
+                 'Enter to return to main menu: \n')
+    if file == '':
+        main()
+    file_found = os.path.isfile(file)
+    if task == 'New':
+        if file_found:
+            print(f'{file} already exists.')
         else:
-            if file_found:
-                return file
+            return file
+    else:
+        if file_found:
+            return file
+        else:
+            response = input('File does not exist. '
+                             'Would you like to create it? [y/n] ')
+            if response == 'y':
+                new_file(file)
+            elif response == 'n':
+                get_filename(task)
             else:
-                print('File does not exist. Please try again.')
+                print('Invalid command.')
+                get_filename(task)
 
 
 def list_files():
@@ -75,46 +83,45 @@ def list_files():
           '-----------------------------------')
     for file in files:
         print(file)
-
+    print('-----------------------------------')
 
 
 def crypt_menu(task):
     """ Dual-purpose file alteration function. """
-    while True:
-        clear_screen()
-        print('___________________________________\n'
-              f'|          {task} File           |\n'
-              '\---------------------------------/')
-        list_files()
-        file = get_filename(task)
-        key = enter_key(task)
-        confirm_target(file, task)
-        doc = crypt_file(file, key, task)
-        print(f'Target file contents:\n{doc}')
-        input(f'{task}ion complete. Press Enter to return to main menu.')
+    clear_screen()
+    print('___________________________________\n'
+          f'|          {task} File           |\n'
+          '\---------------------------------/')
+    list_files()
+    file = get_filename(task)
+    key = enter_key(task)
+    confirm_target(file, task)
+    doc = crypt_file(file, key, task)
+    print(f'Target file contents:\n{doc}')
+    input(f'{task}ion complete. Press Enter to return to main menu.')
+    main()
 
 
 def enter_key(task):
     """ Accepts a hashing key from the user. """
-    while True:
-        key = int(input(f'Enter {task}ion key or '
-                        f'press Enter to go back: '))
-        if key != '':
-            return key
-        if key == '':
-            crypt_menu(task)
+    key = input(f'Enter {task}ion numeric key or '
+                f'press Enter to go back: ')
+    if key.isnumeric():
+        return int(key)
+    else:
+        main()
 
 
 def confirm_target(file, task):
     """ Confirms the user's intention to perform operation on target file. """
-    while True:
-        proceed = input(f'{task} {file} now? [y/n] ')
-        if proceed == 'y':
-            return True
-        elif proceed == 'n':
-            crypt_menu(task)
-        else:
-            print('Invalid input. Please try again.')
+    proceed = input(f'{task} {file} now? [y/n] ')
+    if proceed == 'y':
+        return True
+    elif proceed == 'n':
+        crypt_menu(task)
+    else:
+        print('Invalid input. Please try again.')
+        confirm_target(file, task)
 
 
 def crypt_file(file, key, task):
@@ -140,22 +147,21 @@ def crypt_file(file, key, task):
 
 
 def main():
-    """ Main program loop. """
+    """ Main program menu input. """
     clear_screen()
     menu_screen()
-    while True:
-        option = input(' ')
-        if option == '1':
-            new_file()
-        elif option == '2':
-            crypt_menu('Encrypt')
-        elif option == '3':
-            crypt_menu('Decrypt')
-        elif option == '4':
-            print('Stay sneaky.')
-            exit()
-        else:
-            main()
+    option = input(' ')
+    if option == '1':
+        new_file('')
+    elif option == '2':
+        crypt_menu('Encrypt')
+    elif option == '3':
+        crypt_menu('Decrypt')
+    elif option == '4':
+        print('Stay sneaky.')
+        exit()
+    else:
+        main()
 
 
 if __name__ == '__main__':
